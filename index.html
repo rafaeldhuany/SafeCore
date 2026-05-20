@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCore - Open Source Cryptography</title>
+
+    <meta name="author" content="oVacilo">
+    <meta name="creator" content="oVacilo">
+    <meta name="publisher" content="thevacilos">
+    <meta name="copyright" content="© 2026 oVacilo / thevacilos">
+
+    <meta name="description" content="VacLook - Ferramenta open source de criptografia avançada client-side para textos, arquivos e esteganografia em imagens.">
+    <meta name="keywords" content="criptografia, open source, aes-256, segurança, privacidade, esteganografia, thevacilos, oVacilo">
+    <meta name="robots" content="index, follow">
+
+    <meta name="theme-color" content="#212529">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="VacLook - Open Source Cryptography">
+    <meta property="og:description" content="Proteja seus dados com criptografia avançada e esteganografia direto no navegador.">
+    <meta property="og:site_name" content="VacLook">
+    <meta name="twitter:title" content="VacLook - Open Source Cryptography">
+    <meta name="twitter:description" content="Proteja seus dados com criptografia avançada e esteganografia direto no navegador.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body>
+
+<div id="cryptovault-root">
+
+    <div id="toast-container"></div>
+    
+    <div id="global-progress-overlay" class="hidden modal-container">
+            <div class="cv-backdrop" style="opacity: 1; pointer-events: auto; backdrop-filter: blur(5px);"></div>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width: 80%; max-width: 350px; z-index:1000000; display:flex; flex-direction:column;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                    <span id="g-progress-label" style="font-size:0.95rem; font-weight:bold; color:white; font-family:var(--cv-font-main);">Processando...</span>
+                    <span id="g-progress-pct" style="font-size:0.95rem; font-weight:bold; color:white; font-family:var(--cv-font-code);">0%</span>
+                </div>
+                <div style="height: 8px; background: var(--cv-bg-input); border-radius: 8px; overflow: hidden; border: 1px solid var(--cv-border); box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);">
+                    <div id="g-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--cv-accent), var(--cv-accent-hover)); transition: width 0.1s ease-out; box-shadow: 0 0 10px var(--cv-accent);"></div>
+                </div>
+            </div>
+    </div>
+
+    <div id="history-modal" class="hidden modal-container">
+        <div class="cv-backdrop" onclick="toggleHistory()"></div>
+        <div id="history-panel" class="cv-modal-panel">
+            <div class="flex justify-between items-center mb-4" style="border-bottom:1px solid var(--cv-border); padding-bottom:15px;">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="history" style="color:var(--cv-text-main); width: 24px; height: 24px; margin-right: 5px;"></i>
+                    <span class="cv-label" style="margin:0; font-size:1.1rem; color:var(--cv-text-main);">Histórico de Ações</span>
+                </div>
+                <button onclick="toggleHistory()" style="background:none;border:none;color:var(--cv-text-muted);cursor:pointer; padding:5px; transition:0.2s;"><span style="font-size:20px;">&#10005;</span></button>
+            </div>
+            <div id="history-list" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; flex:1; padding-right:5px; margin-top: 7px;"></div>
+            <button onclick="clearHistory()" class="cv-btn-action" style="background:transparent; border:1px solid var(--cv-danger); color:var(--cv-danger); margin-top:20px; padding:12px; font-size:0.85rem;">Limpar Histórico</button>
+        </div>
+    </div>
+
+    <header class="cv-header">
+        <div class="cv-header-inner">
+            <div class="cv-logo-area">
+                <div class="cv-icon-box">
+                    <i data-lucide="shield-alert" style="color:white; width: 22px; height: 22px;"></i>
+                </div>
+                <div class="cv-title">
+                    <h1>SafeCore</h1>
+                    <p><span>Criptografia, confidencialidade e eliminação de dados sem deixar rastros.</span></p>
+                </div>
+            </div>
+            <div id="header-actions" class="flex items-center gap-2">
+                <button onclick="toggleHistory()" id="btn-history" class="cv-copy-btn flex items-center gap-2" style="background:transparent; border:1px solid var(--cv-border); padding: 8px 16px;" title="Ver Histórico">
+                    <i data-lucide="clock" style="width:16px; height:16px;"></i>
+                    <span>Histórico</span>
+                </button>
+                <button onclick="toggleTheme()" class="cv-copy-btn flex items-center justify-center" style="background:transparent; border:1px solid var(--cv-border); padding: 8px; width: 34px; height: 34px;" title="Alternar Tema">
+                    <i id="theme-icon" data-lucide="moon" style="width:16px; height:16px;"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="cv-nav-container">
+        <nav class="cv-segmented-control">
+            <button onclick="navigate('text')" id="nav-btn-text" class="cv-nav-item active">
+                <i data-lucide="type" style="width:18px;"></i> Texto
+            </button>
+            <button onclick="navigate('file')" id="nav-btn-file" class="cv-nav-item">
+                <i data-lucide="file" style="width:18px;"></i> Arquivo
+            </button>
+            <button onclick="navigate('image')" id="nav-btn-image" class="cv-nav-item">
+                <i data-lucide="image" style="width:18px;"></i> Imagem
+            </button>
+            <button onclick="navigate('about')" id="nav-btn-about" class="cv-nav-item">
+                <i data-lucide="info" style="width:18px;"></i> Sobre
+            </button>
+        </nav>
+    </div>
+
+    <main class="cv-main-content">
+
+        <section id="page-text" class="w-full">
+            <div class="cv-grid-layout">
+                <div class="cv-col-left">
+                    <div class="cv-mode-switch">
+                        <button onclick="setMode('text', 'encrypt')" id="btn-text-enc" class="cv-mode-btn active">Criptografar</button>
+                        <button onclick="setMode('text', 'decrypt')" id="btn-text-dec" class="cv-mode-btn">Descriptografar</button>
+                    </div>
+                    <div id="text-password-block">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="cv-label">Senha Mestra</label>
+                            <label class="cv-switch-wrapper" id="text-switch-wrapper">
+                                <input type="checkbox" id="text-use-password" checked onclick="togglePasswordInput('text')" class="cv-switch-input">
+                                <span class="cv-switch-slider"></span>
+                            </label>
+                        </div>
+                        <div id="text-password-wrapper" class="cv-input-wrapper">
+                            <input type="password" id="text-password" placeholder="Sua senha segura..." class="cv-input" autocomplete="off">
+                            <button class="cv-clear-btn" onclick="clearField('text-password')">&#10005;</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="cv-label" id="text-content-label">Conteúdo para Criptografar</label>
+                        <div class="cv-input-wrapper">
+                            <textarea id="text-content" placeholder="Escreva aqui..." class="cv-input" autocomplete="off" oninput="handleTextInput('text')"></textarea>
+                            <button class="cv-clear-btn" onclick="clearField('text-content')" style="top:14px;">&#10005;</button>
+                        </div>
+                    </div>
+                    <button onclick="processText()" id="text-action-btn" class="cv-btn-action">PROCESSAR</button>
+                </div>
+                <div class="cv-col-right">
+                    <div id="text-placeholder" class="cv-result-placeholder">
+                        <i data-lucide="arrow-left" style="width:40px; height:40px;"></i>
+                        <p>Aguardando processamento...</p>
+                    </div>
+                    <div id="text-result-container" class="hidden w-full">
+                        <div class="cv-result-header">
+                            <label class="cv-label" style="color:var(--cv-accent); margin:0;">Resultado</label>
+                            <div style="display:flex; gap:8px;">
+                                <button onclick="copyToClipboard('text-output')" class="cv-copy-btn flex items-center gap-1"><i data-lucide="copy" style="width: 14px;"></i> Copiar</button>
+                            </div>
+                        </div>
+                        <div id="text-output" class="cv-result-box"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-file" class="hidden w-full">
+            <div class="cv-grid-layout">
+                <div class="cv-col-left">
+                    <div class="cv-mode-switch">
+                        <button onclick="setMode('file', 'encrypt')" id="btn-file-enc" class="cv-mode-btn active">Criar Arquivo</button>
+                        <button onclick="setMode('file', 'decrypt')" id="btn-file-dec" class="cv-mode-btn">Abrir Arquivo</button>
+                    </div>
+                    <div id="file-create-area">
+                        <div class="cv-mode-switch" style="margin-bottom:1rem;">
+                            <button onclick="toggleFileType('text')" id="type-btn-text" class="cv-mode-btn active" style="background:var(--cv-bg-sub); color:white;">Texto</button>
+                            <button onclick="toggleFileType('upload')" id="type-btn-upload" class="cv-mode-btn" style="color:var(--cv-text-muted);">Upload</button>
+                        </div>
+                        
+                        <div id="file-input-text-wrapper" class="cv-input-wrapper">
+                            <textarea id="file-content-text" rows="5" placeholder="Conteúdo do arquivo..." class="cv-input" autocomplete="off" oninput="handleTextInput('file')"></textarea>
+                            <button class="cv-clear-btn" onclick="clearField('file-content-text')" style="top:14px;">&#10005;</button>
+                        </div>
+
+                        <div id="file-input-upload-wrapper" class="hidden">
+                                <div onclick="document.getElementById('file-content-upload').click()" class="cv-dropzone hidden-when-file">
+                                <input type="file" id="file-content-upload" class="hidden">
+                                <i data-lucide="upload" style="color:var(--cv-text-muted); width:32px; margin-bottom:10px;"></i>
+                                <p id="upload-label" style="font-size:0.9rem; color:var(--cv-text-muted);">Clique para selecionar ou arraste aqui</p>
+                                </div>
+                                
+                                <div id="file-upload-info" class="hidden" style="margin-top:10px; padding:12px; background:var(--cv-bg-input); border:1px solid var(--cv-border); border-radius:8px; display:flex; align-items:center; gap:12px;">
+                                <div style="background:var(--cv-bg-card); padding:10px; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                                        <i id="file-info-icon" data-lucide="file" style="color:var(--cv-text-muted); width:24px; height:24px;"></i>
+                                </div>
+                                <div style="overflow:hidden; flex:1;">
+                                    <p id="file-info-name" style="font-size:0.9rem; font-weight:bold; color:var(--cv-text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;"></p>
+                                    <p id="file-info-details" style="font-size:0.75rem; color:var(--cv-text-muted); font-family:var(--cv-font-code); margin:4px 0 0 0;"></p>
+                                </div>
+                                <button onclick="clearFileUpload()" class="cv-clear-btn" style="position:static; opacity:1; margin-left:auto; pointer-events:auto; color:var(--cv-text-muted);">
+                                    &#10005;
+                                </button>
+                                </div>
+                                
+                                <div style="margin-top:1.5rem;">
+                                    <label class="cv-label">Texto Adicional (Opcional)</label>
+                                    <div class="cv-input-wrapper">
+                                        <textarea id="file-extra-text" rows="3" placeholder="Adicione notas ao arquivo..." class="cv-input" autocomplete="off"></textarea>
+                                        <button class="cv-clear-btn" onclick="clearField('file-extra-text')" style="top:14px;">&#10005;</button>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div id="file-upload-area" class="hidden">
+                        <div onclick="document.getElementById('lock-file-input').click()" class="cv-dropzone" style="padding:4rem 1rem;">
+                            <input type="file" id="lock-file-input" class="hidden" accept=".lock">
+                            <i data-lucide="folder-lock" style="color:var(--cv-text-muted); width:40px; height:40px; margin-bottom:10px;"></i>
+                            <p id="lock-file-label" style="font-weight:bold; font-size: 1.1rem; color:var(--cv-text-muted);">Selecionar arquivo .lock</p>
+                        </div>
+                    </div>
+                    <div id="file-password-block" style="margin-top:0px;">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="cv-label">Senha do Arquivo</label>
+                            <label class="cv-switch-wrapper" id="file-switch-wrapper">
+                                <input type="checkbox" id="file-use-password" checked onclick="togglePasswordInput('file')" class="cv-switch-input">
+                                <span class="cv-switch-slider"></span>
+                            </label>
+                        </div>
+                        <div id="file-password-wrapper" class="cv-input-wrapper">
+                            <input type="password" id="file-password" placeholder="Senha..." class="cv-input" autocomplete="off">
+                            <button class="cv-clear-btn" onclick="clearField('file-password')">&#10005;</button>
+                        </div>
+                    </div>
+                    
+                    <div id="file-save-as-block">
+                        <label class="cv-label">Salvar Como (.lock)</label>
+                        <div class="cv-input-wrapper">
+                            <input type="text" id="file-name" placeholder="meu_backup" class="cv-input" autocomplete="off">
+                            <button class="cv-clear-btn" onclick="clearField('file-name')">&#10005;</button>
+                        </div>
+                    </div>
+                    
+                    <button onclick="processFileLock()" id="file-action-btn" class="cv-btn-action" style="margin-top:0px;">GERAR ARQUIVO</button>
+                </div>
+                <div class="cv-col-right">
+                    <div id="file-placeholder" class="cv-result-placeholder">
+                        <i data-lucide="file-text" style="width:40px; height:40px;"></i>
+                        <p>Resultado do arquivo aparecerá aqui</p>
+                    </div>
+                    
+                    <div id="file-input-preview-right" class="w-full h-full hidden flex-col items-center justify-center animate-fade-in" style="background:var(--cv-bg-darkest);">
+                        <img id="file-input-image-preview" class="w-full rounded hidden" style="max-height:600px; object-fit:contain;">
+                        <div id="file-input-generic-preview" class="hidden text-center mb-0" style="">
+                                <i data-lucide="file" style="width:56px; height:56px; color:var(--cv-text-muted); margin-bottom:0px !important; margin-top:15px !important;"></i>
+                                <p id="file-input-name" style="color:var(--cv-text-main); font-weight:bold; font-size: 1.1rem;"></p>
+                        </div>
+                    </div>
+
+                    <div id="file-download-container" class="w-full flex items-center justify-center h-full hidden">
+                        <div class="text-center w-full">
+                            <i data-lucide="check-circle" style="color:var(--cv-accent); width:64px; height:64px; margin-bottom:1rem;"></i>
+                            <p style="margin-bottom:1.5rem; color:var(--cv-text-main); font-size: 1.2rem; font-weight: 600;">Arquivo Criptografado!</p>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <a id="file-download-link" class="cv-btn-download" style="margin-top:0;">BAIXAR ARQUIVO .LOCK</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="file-result-area" class="hidden w-full">
+                        <div class="cv-result-header">
+                            <label class="cv-label" style="color:var(--cv-accent);">Conteúdo Aberto</label>
+                        </div>
+                        
+                        <div id="file-display-top" class="w-full mb-4 hidden" style="position: relative; background:var(--cv-bg-darkest); border-radius:8px; overflow:hidden;">
+                            <a id="file-download-overlay" class="cv-overlay-download-btn hidden">
+                                <i data-lucide="download" style="width:20px; height:20px;"></i>
+                            </a>
+                            <img id="file-result-preview" class="w-full rounded hidden" style="max-height:450px; object-fit:contain; display:block;">
+                            
+                            <div id="file-result-generic" class="hidden flex-col items-center justify-center p-8 text-center">
+                                <i data-lucide="file-check" style="width:56px; height:56px; color:var(--cv-accent); margin-bottom:15px;"></i>
+                                <p id="file-result-generic-name" style="color:var(--cv-text-main); font-weight:bold; margin-bottom:20px; font-size: 1.1rem;"></p>
+                                <a id="file-result-generic-dl" class="cv-btn-download" style="margin-top:0; display:inline-block; padding:12px 24px;">Baixar Arquivo</a>
+                            </div>
+                        </div>
+
+                        <div id="file-output-content" class="cv-result-box"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-image" class="hidden w-full">
+            <div class="cv-grid-layout">
+                <div class="cv-col-left">
+                    <div class="cv-mode-switch">
+                        <button onclick="setMode('img', 'encrypt')" id="btn-img-enc" class="cv-mode-btn active">Esconder</button>
+                        <button onclick="setMode('img', 'decrypt')" id="btn-img-dec" class="cv-mode-btn">Revelar</button>
+                    </div>
+                    <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="cv-dropzone" style="padding:2rem; position:relative;">
+                        <input type="file" id="file-input" class="hidden" accept="image/png">
+                        <div id="upload-placeholder-content">
+                            <i id="img-icon-left" data-lucide="image" style="width:32px; height:32px; margin-bottom:10px; color:var(--cv-text-muted);"></i>
+                            <p id="img-label-left" style="font-size:0.9rem; color:var(--cv-text-muted);">Selecionar ou arrastar PNG</p>
+                        </div>
+                        <button id="btn-clear-img" onclick="clearImageUpload(event)" class="cv-clear-btn hidden" style="top: 14px; right: 14px; opacity: 1; pointer-events: auto !important; z-index: 50; background: transparent; color: #adb5bd;">&#10005;</button>
+                    </div>
+                    
+                    <div id="warning-stego" style="margin-top:0px; font-size:0.8rem; color:#f59e0b; background:rgba(245,158,11,0.1); padding:10px; border-radius:6px; border:1px solid rgba(245,158,11,0.3);">
+                        ⚠ Não comprima a imagem (ex: WhatsApp). Envie sempre como documento original.
+                    </div>
+                    
+                    <div id="img-password-block" style="margin-top:0px;">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="cv-label">Senha</label>
+                            <label class="cv-switch-wrapper" id="img-switch-wrapper">
+                                <input type="checkbox" id="img-use-password" checked onclick="togglePasswordInput('img')" class="cv-switch-input">
+                                <span class="cv-switch-slider"></span>
+                            </label>
+                        </div>
+                        <div id="img-password-wrapper" class="cv-input-wrapper">
+                            <input type="password" id="img-password" placeholder="Senha..." class="cv-input" autocomplete="off">
+                            <button class="cv-clear-btn" onclick="clearField('img-password')">&#10005;</button>
+                        </div>
+                    </div>
+                    <div id="img-msg-container" style="margin-top:0px;">
+                        <label class="cv-label" id="img-msg-label">Mensagem para Esconder</label>
+                        <div class="cv-input-wrapper">
+                            <textarea id="img-message" rows="3" placeholder="O que deseja esconder na imagem..." class="cv-input" autocomplete="off" oninput="handleTextInput('img')"></textarea>
+                            <button class="cv-clear-btn" onclick="clearField('img-message')" style="top:14px;">&#10005;</button>
+                        </div>
+                    </div>
+                    <button onclick="processImage()" id="img-action-btn" class="cv-btn-action" style="margin-top:0px;">PROCESSAR IMAGEM</button>
+                </div>
+                <div class="cv-col-right">
+                        <div id="img-placeholder" class="cv-result-placeholder">
+                        <i data-lucide="image-plus" style="width:40px; height:40px;"></i>
+                        <p>Aguardando imagem...</p>
+                    </div>
+                    <div id="img-visual-area" class="hidden w-full h-full flex flex-col items-center relative" style="min-height: 400px;">
+                        <div style="flex:1; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--cv-bg-darkest); border-radius:8px; padding:0; overflow:hidden; position:relative;">
+                                <img id="img-preview-right" class="w-full h-full" style="object-fit:contain;">
+                                
+                                <a id="img-download-overlay" class="cv-overlay-download-btn hidden" download style="right: 12px; top: 12px;">
+                                <i data-lucide="download" style="width:20px; height:20px;"></i>
+                            </a>
+
+                                <div id="img-analyzing" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center" style="position:absolute; top:0; left:0; right:0; bottom:0; border-radius:8px; z-index: 30; background: rgba(0,0,0,0.85);">
+                                <p style="color:var(--cv-accent); font-size:0.9rem; font-weight:bold; letter-spacing: 1px;">VERIFICANDO SENHA...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-about" class="hidden w-full">
+            <div class="cv-grid-layout">
+                <div class="cv-col-left" style="grid-column: span 2;">
+                    <div style="text-align: center; padding: 1rem 0 1rem 0;">
+                        <i data-lucide="shield-check" style="width: 56px; height: 56px; color: var(--cv-accent); margin-bottom: 20px"></i>
+                        <h2 style="margin: 0; color: var(--cv-text-main); font-size: 1.8rem;">Segurança Transparente</h2>
+                        <p style="color: var(--cv-text-muted); font-size: 1rem; margin-top: 8px;">SafeCore é um sistema de criptografia projetado para garantir a máxima segurança e privacidade no armazenamento de dados. Nascido da necessidade de guardar informações sensíveis de forma interessante e impenetrável, o sistema permite que você proteja textos, imagens e arquivos diversos em um ambiente client-side, longe dos olhos da internet. Entenda como seus dados são protegidos.</p>
+                    </div>
+
+                    <div class="cv-grid-layout">
+                        <div class="cv-about-card">
+                            <div class="cv-about-title"><i data-lucide="lock" style="width: 20px;"></i> AES-256-GCM</div>
+                            <div class="cv-about-text">
+                                Utilizamos o padrão de criptografia avançada (AES) com chaves de 256 bits em modo GCM (Galois/Counter Mode). Isso garante não apenas a confidencialidade dos seus dados, mas também a integridade, impedindo que sejam alterados sem a chave correta.
+                            </div>
+                        </div>
+
+                        <div class="cv-about-card">
+                            <div class="cv-about-title"><i data-lucide="hash" style="width: 20px;"></i> PBKDF2 & SHA-512</div>
+                            <div class="cv-about-text">
+                                Sua senha nunca é usada diretamente. Usamos PBKDF2 com 600.000 iterações e SHA-512 para derivar uma chave criptográfica forte, tornando ataques de força bruta extremamente difíceis e lentos.
+                            </div>
+                        </div>
+
+                        <div class="cv-about-card">
+                            <div class="cv-about-title"><i data-lucide="eye-off" style="width: 20px;"></i> Client-Side</div>
+                            <div class="cv-about-text">
+                                Tudo acontece no seu navegador. Seus dados nunca são enviados para nenhum servidor. A criptografia é executada localmente usando a API Web Crypto do seu dispositivo com máxima segurança.
+                            </div>
+                        </div>
+
+                        <div class="cv-about-card">
+                            <div class="cv-about-title"><i data-lucide="code-2" style="width: 20px;"></i> Open Source</div>
+                            <div class="cv-about-text">
+                                Este sistema é de código aberto e totalmente auditável no <a href="https://github.com/rafaeldhuany/SafeCore" target="_blank">GitHub</a>. Criado por Rafael Dhuany. Com a idéia de proteger dados sensíveis e pessoais, salvando em sua maquina de forma que ninguém consiga acessar.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="cv-footer">
+        <p>&copy; 2026 <strong>SafeCore</strong> Cryptography. <br> Desenvolvido por <strong>Rafael Dhuany</strong>.</p>
+    </footer>
+
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="assets/js/main.js"></script>
+
+</body>
+</html>
