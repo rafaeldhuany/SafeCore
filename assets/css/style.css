@@ -9,6 +9,7 @@
     
     /* Textos principais */
     --cv-text-main: #161226;
+    --cv-text-titulo: #161226;
     --cv-text-muted: #575d68;
     --cv-text-inverse: #ffffff;
     --cv-toast-text: #363b43;
@@ -43,6 +44,7 @@
 html.dark {
     /* Fundo e Estrutura */
     --cv-bg-body: #212529;
+    --cv-bg-body-2: #212529;
     --cv-bg-card: #2b3035;
     --cv-bg-input: #1a1d20;
     --cv-bg-darker: #1e2124;
@@ -50,6 +52,7 @@ html.dark {
 
     /* Textos principais */
     --cv-text-main: #f8f9fa;
+    --cv-text-titulo: #f8f9fa;
     --cv-text-muted: #adb5bd;
     --cv-text-inverse: #212529;
     --cv-toast-text: #f8f9fa;
