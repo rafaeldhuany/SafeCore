@@ -539,8 +539,8 @@ document.getElementById('file-content-upload').onchange = (e) => {
 document.getElementById('lock-file-input').onchange = (e) => {
     const f = e.target.files[0];
     if (f) {
-        if (!f.name.toLowerCase().endsWith('.lock')) { showToast("Arquivo deve ser .lock", "error"); e.target.value = ''; return; }
-        state.files.lock = f; document.getElementById('lock-file-label').innerText = f.name;
+        if (!f.name.toLowerCase().endsWith('.safe')) { showToast("Arquivo deve ser .safe", "error"); e.target.value = ''; return; }
+        state.files.safe = f; document.getElementById('lock-file-label').innerText = f.name;
         
         if (state.modes.file === 'decrypt') {
             const blk = document.getElementById('file-password-block');
@@ -820,11 +820,11 @@ async function processFileLock() {
                             const blob = new Blob([encrypted], { type: "application/octet-stream" });
                             const url = URL.createObjectURL(blob);
                             const link = document.getElementById('file-download-link');
-                            link.href = url; link.download = `${fname}.lock`;
+                            link.href = url; link.download = `${fname}.safe`;
                             
                             updateResultUI('file', true);
-                            showToast("Arquivo .lock criado!"); 
-                            addToHistory('Criou um novo arquivo .lock', 'Arquivo', 'Sucesso');
+                            showToast("Arquivo .safe criado!"); 
+                            addToHistory('Criou um novo arquivo .safe', 'Arquivo', 'Sucesso');
                             endProgress();
                         }, 50);
 
@@ -848,18 +848,18 @@ async function processFileLock() {
                     const blob = new Blob([encrypted], { type: "application/octet-stream" });
                     const url = URL.createObjectURL(blob);
                     const link = document.getElementById('file-download-link');
-                    link.href = url; link.download = `${fname}.lock`;
+                    link.href = url; link.download = `${fname}.safe`;
                     updateResultUI('file', true);
-                    showToast("Arquivo .lock criado!"); 
-                    addToHistory('Criou um arquivo .lock', 'Arquivo', 'Sucesso');
+                    showToast("Arquivo .safe criado!"); 
+                    addToHistory('Criou um arquivo .safe', 'Arquivo', 'Sucesso');
                     endProgress();
                 }, 50);
             }
 
         } else {
-            if (!state.files.lock) return showToast("Selecione o arquivo .lock", "error");
+            if (!state.files.safe) return showToast("Selecione o arquivo .safe", "error");
             
-            startProgress("Lendo arquivo .lock...");
+            startProgress("Lendo arquivo .safe...");
             const r = new FileReader();
             r.onprogress = (ev) => { if(ev.lengthComputable) updateProgress((ev.loaded/ev.total)*40); };
             r.onload = async (ev) => {
@@ -925,17 +925,17 @@ async function processFileLock() {
                         lucide.createIcons();
                         updateResultUI('file', true);
                         showToast("Arquivo aberto!"); 
-                        addToHistory('Abriu um arquivo .lock', 'Arquivo', 'Sucesso');
+                        addToHistory('Abriu um arquivo .safe', 'Arquivo', 'Sucesso');
                         endProgress();
                     } catch(err) {
                         console.error(err);
                         endProgress();
                         showToast("Falha: Senha ou dados incorretos.", "error"); 
-                        addToHistory('Falha ao abrir arquivo .lock', 'Arquivo', 'Falha');
+                        addToHistory('Falha ao abrir arquivo .safe', 'Arquivo', 'Falha');
                     }
                 }, 50);
             };
-            r.readAsArrayBuffer(state.files.lock);
+            r.readAsArrayBuffer(state.files.safe);
         }
     } catch (e) { 
         console.error(e); 

@@ -208,9 +208,9 @@
                     </div>
                     <div id="file-upload-area" class="hidden">
                         <div onclick="document.getElementById('lock-file-input').click()" class="cv-dropzone" style="padding:4rem 1rem;">
-                            <input type="file" id="lock-file-input" class="hidden" accept=".lock">
+                            <input type="file" id="lock-file-input" class="hidden" accept=".safe">
                             <i data-lucide="folder-lock" style="color:var(--cv-text-muted); width:40px; height:40px; margin-bottom:10px;"></i>
-                            <p id="lock-file-label" style="font-weight:bold; font-size: 1.1rem; color:var(--cv-text-muted);">Selecionar arquivo .lock</p>
+                            <p id="lock-file-label" style="font-weight:bold; font-size: 1.1rem; color:var(--cv-text-muted);">Selecionar arquivo .safe</p>
                         </div>
                     </div>
                     <div id="file-password-block" style="margin-top:0px;">
@@ -228,7 +228,7 @@
                     </div>
                     
                     <div id="file-save-as-block">
-                        <label class="cv-label">Salvar Como (.lock)</label>
+                        <label class="cv-label">Salvar Como (.safe)</label>
                         <div class="cv-input-wrapper">
                             <input type="text" id="file-name" placeholder="meu_backup" class="cv-input" autocomplete="off">
                             <button class="cv-clear-btn" onclick="clearField('file-name')">&#10005;</button>
@@ -256,7 +256,7 @@
                             <i data-lucide="check-circle" style="color:var(--cv-accent); width:64px; height:64px; margin-bottom:1rem;"></i>
                             <p style="margin-bottom:1.5rem; color:var(--cv-text-main); font-size: 1.2rem; font-weight: 600;">Arquivo Criptografado!</p>
                             <div style="display:flex; flex-direction:column; gap:10px;">
-                                <a id="file-download-link" class="cv-btn-download" style="margin-top:0;">BAIXAR ARQUIVO .LOCK</a>
+                                <a id="file-download-link" class="cv-btn-download" style="margin-top:0;">BAIXAR ARQUIVO .SAFE</a>
                             </div>
                         </div>
                     </div>
